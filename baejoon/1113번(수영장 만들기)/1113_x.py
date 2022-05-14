@@ -11,7 +11,6 @@ from collections import deque
 
 R, C = map(int, input().split())
 graph = [list(map(int, input())) for _ in range(R)]
-area = [[False] * C for _ in range(R)]
 
 
 def visited_init():
@@ -20,57 +19,56 @@ def visited_init():
     return visited
 
 
-def area_find():
-    """ 구역을 나눠주는 함수 """
+def temp_init(layer):
+    """ 임시 리스트를 만들어 주는 함수 """
+    # 만약에 이거 없이 방문처리 리스트로 처리 가능하면 이거 뺄 것
+    temp = [[layer] * C for _ in range(R)]
+    return temp
 
-    cnt = 0
-    for x in range(R):
-        for y in range(C):
-            if not area[x][y]:
-                cnt += 1
-                sep_area(x, y, cnt)
+def cnt_water(layer):
+    """ 각층 마다 물이 얼마나 고이는지 확인하는 함수 """
+    dx = [-1,1,0,0]
+    dy = [0,0,-1,1]
 
-
-def sep_area(x, y, cnt):
-    """ 구역을 한 번 나누는 함수 """
-    dx = [-1, 1, 0, 0]
-    dy = [0, 0, -1, 1]
-
+    # 시작은 무조건 0,0에서 할 예정
     visited = visited_init()
+    visited[0][0] = True
 
-    visited[x][y] = True
-    area[x][y] = cnt
+    temp = temp_init(layer)
 
     q = deque()
-    q.append([x, y])
+    q.append([0, 0])
+
+    cnt = 0
 
     while q:
         x, y = q.popleft()
-
         for z in range(4):
             nx = x + dx[z]
             ny = y + dy[z]
-            if con_sep_area(nx, ny, x, y, visited):
-                q.append([nx, ny])
-                area[nx][ny] = cnt
-                visited[nx][ny] = True
+            if cnt_water_con(nx, ny, visited, layer):
+                pass
 
 
-def con_sep_area(nx, ny, x, y, visited):
-    if 0 > nx or nx >= R:
+def cnt_water_con(x, y, visited, layer):
+    """ cnt_water 조건 함수 """
+    if 0 > x or x >= R:
         return False
-    if 0 > ny or ny >= C:
+    if 0 > y or y >= C:
         return False
-    if visited[nx][ny]:
+    if visited[x][y]:
         return False
-    if graph[x][y] != graph[nx][ny]:
+    if graph[x][y] > layer: # 만약에 뭔가 이상하고 애매하면 이거 먼저 의심하기
         return False
     return True
 
 
-area_find()
-print(*area, sep='\n')
 
-# 임시 리스트를 만들고 임시 리스트에서 변경 값을 저장함, 그 후 원래 리스트와 임시 리스트의 차이를 구해서 더하면 됨
-# 이어져 있는지 확인하면 됨 -> 현재 기준에서 위와 아래로 같은지, 양 옆으로 같은지 확인하면 됨
-# 영역을 먼저 구하는게 맞을 듯
+# 먼저 물이 가장 높은 높이 까지 있다고 가정을 한고, 그 높이에서 흘러넘치는 물이 있는지 체크하고, 남은 물이 있으면 count한다 -> 이 방식을 1층까지 해서 총 남은 물의 양을 더한다
+# 아니면 1층 부터 높이 쌓아가는 방식도 있음 -> 우선 이 방식으로 하기
+
+# 물이 고일 수 있는 조건
+# 1. 가장 자리이면 안된다.
+# 2. 둘러 쌓여 있어야 한다.
+
+# 가장 자리로 못가면 절대로 잠길 수 없음
