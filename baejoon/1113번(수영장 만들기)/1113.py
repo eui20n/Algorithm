@@ -20,7 +20,7 @@ def visited_init():
 
 
 def find_min_max():
-    """ 최소값과 최대값을 찾아주는 함수 """
+    """ 최대값과 최소값을 찾아주는 함수 """
     max_num = 0
     min_num = float('inf')
 
@@ -32,18 +32,16 @@ def find_min_max():
             if graph[x][y] < min_num:
                 min_num = graph[x][y]
 
-    return [min_num, max_num]
+    return min_num, max_num
 
 
 def make_pool(x, y, layer, visited):
     """ 수영장을 만들어 주는 함수 """
-    # 잠길 곳이 없어서 0을 반환해줌
-    if graph[x][y] > layer:
+    if graph[x][y] >= layer:
         visited[x][y] = True
         return 0
 
-    if x == 0 or y == 0 or x == R - 1 or y == C - 1:
-        check_connect(x, y, visited, layer)
+    if x == 0 or x == R - 1 or y == 0 or y == C - 1:
         return 0
 
     dx = [-1, 1, 0, 0]
@@ -54,6 +52,7 @@ def make_pool(x, y, layer, visited):
     q = deque()
     q.append([x, y])
     result = 1
+    side = False
 
     while q:
         x, y = q.popleft()
@@ -61,19 +60,21 @@ def make_pool(x, y, layer, visited):
         for z in range(4):
             nx = x + dx[z]
             ny = y + dy[z]
-            if make_pool_con(nx, ny, visited, layer):
+            if make_pool_con(nx, ny, layer, visited):
                 if nx == 0 or nx == R - 1 or ny == 0 or ny == C - 1:
-                    check_connect(nx, ny, visited, layer)
-                    return 0
+                    side = True
 
-                q.append([nx, ny])
                 visited[nx][ny] = True
+                q.append([nx, ny])
                 result += 1
+
+    if side:
+        return 0
 
     return result
 
 
-def make_pool_con(x, y, visited, layer):
+def make_pool_con(x, y, layer, visited):
     """ make_pool의 조건 함수 """
     if 0 > x or x >= R:
         return False
@@ -81,54 +82,34 @@ def make_pool_con(x, y, visited, layer):
         return False
     if visited[x][y]:
         return False
-    if graph[x][y] > layer:
+    if graph[x][y] >= layer:
         return False
     return True
 
 
-def check_connect(x, y, visited, layer):
-    """ 가장 자리와 만나는 것이 뭔지 알려주는 함수 """
-
-    dx = [-1, 1, 0, 0]
-    dy = [0, 0, -1, 1]
-
-    visited[x][y] = True
-
-    q = deque()
-    q.append([x, y])
-
-    while q:
-        x, y = q.popleft()
-
-        for z in range(4):
-            nx = x + dx[z]
-            ny = y + dy[z]
-            if make_pool_con(nx, ny, visited, layer):
-                visited[nx][ny] = True
-                q.append([nx, ny])
-
-
 def main():
-    """ 함수를 실행 시키는 함수 """
+    """ 함수를 실행 시킬 함수 """
     cnt = 0
-
     min_num, max_num = find_min_max()
 
-    for layer in range(min_num, max_num + 1):
+    for layer in range(min_num + 1, max_num + 1):
         visited = visited_init()
 
         for x in range(R):
             for y in range(C):
                 if not visited[x][y]:
-                    # print(layer)
-                    # print(*visited, sep = '\n')
                     cnt += make_pool(x, y, layer, visited)
-                    # print('cnt', cnt)
+                    # print(f"layer: {layer}", f"cnt: {cnt}")
+                    # print(*visited, sep = '\n')
+                    # print()
 
-        # print('layer', layer)
-        # print('cnt', cnt)
+        # print(f"layer: {layer}")
+        # print(f"cnt: {cnt}")
 
     return cnt
 
 
 print(main())
+
+# 높이가 1이면 2가 와야지 물을 채울 수 있음 -> 이런 식으로 구현할 것
+# (6, 10)이 1번씩 더해짐
