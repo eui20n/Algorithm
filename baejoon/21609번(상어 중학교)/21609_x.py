@@ -31,7 +31,14 @@ board = [list(map(int, input().split())) for _ in range(N)]
 def visited_init():
     """ 방문 처리 리스트를 만들어 주는 함수 """
     visited = [[False] * N for _ in range(N)]  # 만약에 필요 없으면 지울 것
+
+    for x in range(N):
+        for y in range(N):
+            if board[x][y] == 'x':
+                visited[x][y] = True
+
     return visited
+
 
 def find_block_group(x, y, visited):
     """ 블록 그룹을 찾아 주는 함수 """
@@ -44,7 +51,7 @@ def find_block_group(x, y, visited):
     visited_0 = visited_init()
     visited_0[x][y] = True
 
-    color = board[x][y] # 그 구역의 색
+    color = board[x][y]  # 그 구역의 색
 
     dx = [-1, 1, 0, 0]
     dy = [0, 0, -1, 1]
@@ -53,6 +60,7 @@ def find_block_group(x, y, visited):
     q.append([x, y])
 
     result = [[x, y, color]]
+    temp_cnt = 0
 
     while q:
         x, y = q.popleft()
@@ -61,12 +69,15 @@ def find_block_group(x, y, visited):
             nx = x + dx[z]
             ny = y + dy[z]
             if find_block_group_con(nx, ny, color, visited_0):
-                q.append([nx, ny])
-                visited_0[nx][ny] = True
-                result.append([nx, ny, board[nx][ny]]) # x, y, 그 위치의 색
-
                 if board[nx][ny] != 0:
                     visited[nx][ny] = True
+
+                if board[nx][ny] == 0:
+                    temp_cnt += 1
+
+                q.append([nx, ny])
+                visited_0[nx][ny] = True
+                result.append([nx, ny, board[nx][ny]])  # x, y, 그 위치의 색
 
     if len(result) < 2:
         return False
@@ -74,6 +85,9 @@ def find_block_group(x, y, visited):
     # 모두 0인 그룹은 False를 반환해줌
     if sum(list(zip(*result))[2]) == 0:
         return False
+
+    for x in range(len(result)):
+        result[x].append(temp_cnt)
 
     return result
 
@@ -105,28 +119,55 @@ def sep_block_group():
                 temp = find_block_group(x, y, visited)
 
                 if temp:
+                    temp.sort(key=lambda x: (-x[3], -x[2], x[0], x[1]))
                     block_group_list.append(temp)
 
     return block_group_list
 
 
-
 def delete_block_group():
     """ 상어 그룹을 없애는 함수 """
     # 1. 가장 많은 그룹 없애기
-    # 2. 1번이 여러개면 무지개 그룹이 제일 많은 것
+    # 2. 1번이 여러개면 무지개 그룹이 제일 많은 것 -> 어디에 담아서 줄지 생각하기
     # 3. 2번도 여러개면 기준 블록 행이 가장 작은 것
     # 4. 3번도 여러개면 기준 블록 열이 가장 작은 것
     # 위 의 규칙에 맞게 없애기
+    # 해결
 
-    block_group = sep_block_group()
+    block_group = sorted(sep_block_group(), key=lambda x: (-len(x)))
 
-    # 고민 사항 -> 그냥 반복문을 돌릴지 말지 고민하기
-    # 고민 사항 외에도 find_block_group에서 return 하기 전에 그냥 정렬을 해주고 반환하기 -> 크기 순으로 정렬하고 그 외는 가장 앞에 있는 것 쓰기
-    # 만약 위의 생각이 틀리면 다시 하기
+    # 삭제할 블록들
+    delete_blocks = block_group[0]
+
+    for x in delete_blocks:
+        board[x[0]][x[1]] = 'x'
+
+    return len(delete_blocks) ** 2
 
 
-# print(*block_group(), sep = '\n')
+def gravity_block():
+    """ 중력을 담당해 주는 함수 """
+
+    # 이분 탐색으로 내리기
+    for y in range(N - 1, -1, -1):
+        cnt = N - 1
+        for x in range(N - 1, -1, -1):
+            if board[x][y] == -1:
+                continue
+
+            if board[x][y] == 'x':
+                continue
+
+
+
+
+
+
+# print("sep", *sep_block_group(), sep = '\n')
+# print("delete", *delete_block_group(), sep='\n')
+
+delete_block_group()
+print(*board, sep='\n')
 
 # 블록 그룹을 나눌 때 0인 부분은 bfs안돌려도 됨 -> 하지만 그룹 안에는 속해야함
 # 검은 색 블록도 bfs 안돌려도 됨, 또한 그룹에 속하게 하면 안됨 -> 즉, bfs 돌리는건 색이 있는 블록임
