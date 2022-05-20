@@ -5,4 +5,4 @@
 
 
 ### 백준 티어
-[![Solved.ac Profile](http://mazassumnida.wtf/api/generate_badge?boj=eui20n)](https://solved.ac/eui20n)
+[![Solved.ac Profile](http://mazassumnida.wtf/api/v2/generate_badge?boj=eui20n)](https://solved.ac/eui20n)
