@@ -1,11 +1,13 @@
 """
-    문제 이름 : 미네랄
-    URL : https://www.acmicpc.net/problem/2933
+    문제 이름 : 미네랄2
+    URL : https://www.acmicpc.net/problem/18500
     ----------------------------------------------
     <문제 설명>
     왼쪽과 오른쪽에서 번갈아가며 진행됨 -> 왼쪽 먼저
     막대나 미네랄을 만나면, 그 칸에 있는 미네랄은 모두 파괴되고 막대는 이동을 멈춤 -> 모두 파괴된다는게 그 칸에 있는 것을 의미 => 1개 파괴
     파괴된 미네랄이 떠있으면 바닥으로 떨어지는데, 이때 본인 군집의 모양은 유지가 된다
+
+    미네랄(2933) 과 완전히 동일한 문제로 풀이도 같음
 """
 from collections import deque
 
@@ -111,26 +113,43 @@ def gravity(floating_cluster):
     """ 중력을 적용해주는 함수 """
     # 한칸씩 내리면 될듯
 
+    mineral_to_point(floating_cluster)
+
     floating_cluster.sort(key=lambda x: (x[1], -x[0]))
     mineral = False
 
-    # 바꿔야함 -> floating_cluster는 안변하고 있음 -> 이거 고쳐야함, 여기만 고치면 맞음
+    # 그냥 비우고 한칸씩 본다음에 만나면 멈추고 그 때의 값들로 다시 채워주면 될거 같음
     while True:
+        temp = []
+
         for tmp in range(len(floating_cluster)):
             x = floating_cluster[tmp][0]
             y = floating_cluster[tmp][1]
 
-            if cave[x + 1][y] == 'x' or x + 1 == R - 1:
+            if x + 1 == R or cave[x + 1][y] == 'x':
                 mineral = True
+                break
 
-            if cave[x + 1][y] == '.':
-                cave[x + 1][y] = cave[x][y]
-                cave[x][y] = '.'
-
-            floating_cluster[tmp] = [x + 1, y]
+            temp.append([x + 1, y])
 
         if mineral:
             break
+
+        floating_cluster = temp
+
+    point_to_mineral(floating_cluster)
+
+
+def point_to_mineral(cluster_list):
+    """ 점인 군집을 미네랄로 바꿔주는 함수 """
+    for x, y in cluster_list:
+        cave[x][y] = 'x'
+
+
+def mineral_to_point(cluster_list):
+    """ 군집을 점으로 바꾸기 """
+    for x, y in cluster_list:
+        cave[x][y] = '.'
 
 
 def main():
@@ -153,7 +172,3 @@ def main():
 
 
 main()
-
-# 해결해야 하는 것 -> 공중에 떠있는 상태
-# 중력 -> 모양이 안바뀌고 내려가야함
-# 동시에 2개의 군집이 떨어질 수 없음

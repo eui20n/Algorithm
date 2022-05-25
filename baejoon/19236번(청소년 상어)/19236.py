@@ -107,44 +107,41 @@ def change_fish_loc(x, y, fish, cnt, fish_list, fish_dir_list):
             change_fish_loc(x, y, fish, cnt + 1, fish_list, fish_dir_list)
 
 
-def shark_move(x, y, d, fish_list, fish_dir_list, score):  # 상어 x, y, 방향, 물고기 리스트
+def shark_move(x, y, d, fish_list, fish_dir_list, score):  # 상어 x, y, 방향, 물고기 리스트, 점수
     """ 상어가 이동하는 함수 """
     global result
 
     # 여기서 재귀가 일어남
     dx = [0, -1, -1, 0, 1, 1, 1, 0, -1]
     dy = [0, 0, -1, -1, -1, 0, 1, 1, 1]
-    cnt = 1
 
     if score > result:
         result = score
 
-    print(result)
+    nx_1 = x + dx[d]
+    ny_1 = y + dy[d]
+    nx_2 = x + dx[d] * 2
+    ny_2 = y + dy[d] * 2
+    nx_3 = x + dx[d] * 3
+    ny_3 = y + dy[d] * 3
 
-    while True:
-        print(cnt)
-        nx = x + dx[d] * cnt
-        ny = y + dy[d] * cnt
-
-        if 0 > nx or nx >= 4 or 0 > ny or ny >= 4:
-            break
-
+    for nx, ny in [[nx_1, ny_1], [nx_2, ny_2], [nx_3, ny_3]]:
         if 0 <= nx < 4 and 0 <= ny < 4 and fish_list[nx][ny] != 0:
-            score += fish_list[nx][ny]
+            temp_score = score
 
-            fish_list[nx][ny] = -1
-            fish_list[x][y] = 0
+            fish_temp_list = deepcopy(fish_list)
+            fish_temp_dir = deepcopy(fish_dir_list)
 
-            d = fish_dir_list[fish_list[nx][ny]]
-            fish_dir_list[fish_list[nx][ny]] = 0
+            d = fish_temp_dir[fish_temp_list[nx][ny]]
+            fish_temp_dir[fish_temp_list[nx][ny]] = 0
 
-            fish_list = deepcopy(fish_list)
-            fish_dir_list = deepcopy(fish_dir_list)
+            temp_score += fish_temp_list[nx][ny]
 
-            fish_move(1, fish_list, fish_dir_list)
-            shark_move(nx, ny, d, fish_list, fish_dir_list, score)
+            fish_temp_list[nx][ny] = -1
+            fish_temp_list[x][y] = 0
 
-        cnt += 1
+            fish_move(1, fish_temp_list, fish_temp_dir)
+            shark_move(nx, ny, d, fish_temp_list, fish_temp_dir, temp_score)
 
 
 def main(fish_list, fish_dir_list):
@@ -156,20 +153,15 @@ def main(fish_list, fish_dir_list):
     fish_move(1, fish_list, fish_dir_list)
     shark_move(shark_r, shark_c, shark_d, fish_list, fish_dir_list, shark_score)
 
-# print(fish_dir)
-# print(*fish_num, sep='\n')
-
 
 main(fish_num, fish_dir)
 print(result)
 
-# 생각할것
-# 상어 위치를 어디에 담을지 생각하기
-# 번호가 겹치지 않으니 각각의 물고기의 방향은 딕셔너리에 담아서 관리할지 생각하기 -> 방향관리는 이걸로 하기
-# 상어의 현 위치는 -1, 물고기가 없는 곳은 0 으로 표시하기
+"""
+        문제 정리
+1. 재귀를 정말 많이 사용함 -> 내가 문제풀면서 이만큼 재귀를 사용해 본적이 없음
+2. 재귀를 쓸때 deepcopy와 전역변수 안쓰고 하기 -> 아직 실력이 부족해서 못함
+3. 특별히 어려운 로직은 없음
+4. 재귀를 쓰니까 각 함수의 역할 및 끝나는 조건 등을 확실히 알아야함, 이거만 유의하면서 풀면 쉬움
 
-# 상어 이동 함수 안에 물고기 이동 함수가 있으면 됨 -> 재귀 호출
-# 방향 딕셔러니에서 리스트로 바꿀 것
-
-# 그냥 deepcopy 할지 말지 고민하기 -> 안할거면 고민을 좀 더 해야됨 -> 일단 deepcopy해서 답이 맞았는지 확인하기
-# 문제점 - 상어의 방향이 0이 되어서 while문이 안끝남
+"""
