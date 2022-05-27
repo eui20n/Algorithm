@@ -58,11 +58,11 @@ for _ in range(T):
         friend_list.add(friend_1)
         friend_list.add(friend_2)
 
-        # print(cnt[friend_1])
-        # print(cnt)
-    print(parent)
-    print(cnt)
+        print(cnt[parent[friend_1]])
 
-
-# count가 이상하게 출력됨 이거만 해결하면 됨
-# 되어야 하는 것 -> count가 동시에 다 변해야함, 하나만 변하고 하면 안됨
+"""
+        핵심 정리
+1. 시간이 엄청 타이트 하다.
+2. 딕셔너리를 활용해야 한다. 
+3. 카운트를 출력할때 부모노드가 출력하게 하면 된다 -> 이거 생각 못해서 조금 걸린 문제
+"""
