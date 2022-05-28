@@ -11,7 +11,10 @@ sys.setrecursionlimit(10**5)
 
 def parent_change():
     """ 진실이 있는 사람의 부모 노드를 바꿔주는 함수 """
-    standard = min(truth_cnt)
+    if len(truth_cnt) == 1:
+        return
+
+    standard = min(truth_cnt[1:])
 
     for x in truth_cnt[1:]:
         parent[x] = standard
