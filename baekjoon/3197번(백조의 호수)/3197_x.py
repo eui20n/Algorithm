@@ -26,24 +26,34 @@ def find_swan():
 
 def visited_init():
     """ 방문 처리 리스트를 생성해 주는 함수 """
-    visited = [0] * C
+    visited = [[False] * C for _ in range(R)]
     return visited
 
 
-def melt_ice(x, y, visited):
-    """ 녹는지 안녹는지 확인해주는 함수 """
-    visited[y] |= (1 << x)
+def find_cluster(): # 이거 실행
+    """ 백조가 포함이 된 호수를 찾아주는 함수 """
+    visited = visited_init()
+    find_swan()
+    swan_dict = {}
 
-    if lake[x][y] == '.' or lake[x][y] == 'L':
-        return []
+    for x, y in swan_loc:
+        if not visited[x][y]:
+            swan_dict[(x, y)] = swan_cluster(x, y, visited)
 
+    return swan_dict
+
+
+def swan_cluster(x, y, visited):
+    """ 백조의 군집을 찾아주는 함수 """
     dx = [-1, 1, 0, 0]
     dy = [0, 0, -1, 1]
 
+    visited[x][y] = True
+
+    temp_cluster = set([])
+
     q = deque()
     q.append([x, y])
-
-    temp_ice = []
 
     while q:
         x, y = q.popleft()
@@ -51,51 +61,32 @@ def melt_ice(x, y, visited):
         for z in range(4):
             nx = x + dx[z]
             ny = y + dy[z]
+
             if 0 > nx or nx >= R:
                 continue
             if 0 > ny or ny >= C:
                 continue
-
-            if lake[nx][ny] == '.' or lake[nx][ny] == 'L':
-                temp_ice.append([x, y])
+            if visited[nx][ny]:
                 continue
-
-            if visited[ny] & (1 << nx):
+            if lake[nx][ny] == 'X':
                 continue
 
             q.append([nx, ny])
-            visited[ny] |= (1 << nx)
+            visited[nx][ny] = True
 
-    return temp_ice
+            temp_cluster.add((nx, ny))
+            lake[nx][ny] = 'L'
 
-
-def check_melt():
-    """ 어느 얼음이 녹는지 확인해 주는 함수 """
-    visited = visited_init()
-
-    melted_ice = []
-
-    for x in range(R):
-        for y in range(C):
-            if not visited[y] & (1 << x):
-                if temp := melt_ice(x, y, visited):
-                    melted_ice.extend(temp)
-
-    return melted_ice
+    return temp_cluster
 
 
-def melting_ice(): # 이거 실행하기
-    """ 얼음을 녹일 함수 """
-    melted_ice = check_melt()
-
-    for x, y in melted_ice:
-        lake[x][y] = '.'
+def main():
+    """ 함수를 실행 시켜줄 함수 """
+    pass
 
 
-melting_ice()
+swan_group = find_cluster()
+print(swan_group)
 print(*lake, sep='\n')
 
-
-
-# 호수가 있는 칸 옆에 있는 빙판은 녹을까? -> 녹는다고 생각하고 하기
-
+# 피리 부는 사나이 풀고 풀어보기
