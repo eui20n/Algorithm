@@ -18,7 +18,7 @@ def distance(a, b):
     """ 거리 구해주는 함수 """
     temp_1 = (a[0] - b[0]) ** 2
     temp_2 = (a[1] - b[1]) ** 2
-    dist = (temp_1 + temp_2) ** (1/2)
+    dist = (temp_1 + temp_2) ** (1 / 2)
     return dist
 
 
@@ -39,7 +39,21 @@ def union(a, b):
     if a == b:
         return
 
-    parent[b] = a
+    if a[0] > b[0]:
+        parent[a] = b
+        return
+
+    if a[0] < b[0]:
+        parent[b] = a
+        return
+
+    if a[1] > b[1]:
+        parent[a] = b
+        return
+
+    if a[1] < b[1]:
+        parent[b] = a
+        return
 
 
 def god_connected():
@@ -49,26 +63,40 @@ def god_connected():
             union(space_god[num_1 - 1], space_god[num_2 - 1])
 
 
+def make_weight():
+    """ 각 좌표에 거리는 구해주는 함수 """
+    temp = []
+    for x in range(len(space_god)):
+        for y in range(len(space_god)):
+            node_1, node_2 = space_god[x], space_god[y]
+
+            if node_1 == node_2:
+                continue
+
+            temp.append([distance(node_1, node_2), node_1, node_2])
+
+    return temp
+
+
 def connect():
     """ 연결해주는 함수 """
     god_connected()
-
-    space_god.sort(key=lambda x: (x[0], x[1]))
+    new_space_god = make_weight()
+    new_space_god.sort()
     dist = 0
 
-    for x in range(len(space_god) - 1):
-        prev_node, next_node = space_god[x], space_god[x + 1]
-        if find(prev_node) != find(next_node):
-            union(prev_node, next_node)
-            dist += distance(prev_node, next_node)
+    for weight, node_1, node_2 in new_space_god:
+        if find(node_1) != find(node_2):
+            union(node_1, node_2)
+            dist += distance(node_1, node_2)
 
-    return round(dist, 2)
+    return dist
 
 
-god_connected()
-print(parent)
-print(connect())
+print(format(connect(), ".2f"))
 
-# 생각할 것 -> 부모 노드의 키 값을 정수로 해서 순서를 바로 처리할지, 그냥 튜플로 받고 연결 된거랑 안된거 나눌지 생각하기
-# 문제 진짜 잘 읽자 -> 총 통로 길이가 아니라 새로 만들어야 하는 통로 길이네
-# 정렬 말고 거리가 가장 적게 걸리는게 뭔지 파악하기
+
+"""
+    음 찝찝하구만....
+    아마도 문제에 적혀 있지는 않지만 겹치는 노드가 있는 듯
+"""
