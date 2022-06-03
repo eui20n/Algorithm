@@ -36,16 +36,21 @@ def check_dist(x, y):
     visited[x][y] = True
 
     q = deque()
-    q.append([x, y, 0, (x, y)])  # x좌표, y좌료, 길이, 처음이 뭔지 -> 그게 뭔지 보면 열쇠가 구분이 안되서 좌표로 가져갈 것
 
-    node_node_list = []  # 가중치, 노드, 노드를 담아줄 리스트 -> 정수, 튜플, 튜플
+    # x, y, 길이, 좌표(시작점이나 열쇠), 시작한 곳이 시작 점인지 아닌지 구분해주는 문자, 미로 정보
+    q.append([x, y, 0, (x, y), 'O'])
+
+    # 가중치, 노드, 노드를 담아줄 리스트 -> 정수, 튜플, 튜플
+    node_node_list = []
 
     while q:
-        x, y, dist, check = q.popleft()
+        x, y, dist, check, start_check = q.popleft()
         for z in range(4):
             nx = x + dx[z]
             ny = y + dy[z]
-            if 0 > nx or nx >= N or 0 > ny or ny >= N:
+            if 0 > nx or nx >= N:
+                continue
+            if 0 > ny or ny >= N:
                 continue
             if visited[nx][ny]:
                 continue
@@ -56,21 +61,97 @@ def check_dist(x, y):
                 if check[0] == nx and check[1] == ny:
                     continue
 
+                miro[nx][ny] = '0'
                 node_node_list.append([dist + 1, (nx, ny), check])
-                q.append([nx, ny, dist + 1, (nx, ny)])
+
+                q.append([nx, ny, 0, (nx, ny), start_check])
                 visited = visited_init()
                 visited[nx][ny] = True
+
+                if start_check == 'O':
+                    q = deque()
+                    q.append([nx, ny, 0, (nx, ny), 'X'])
+                    break
                 continue
 
-            q.append([nx, ny, dist + 1, check])
+            q.append([nx, ny, dist + 1, check, start_check])
             visited[nx][ny] = True
 
     return node_node_list
 
 
+def find(parent, node):
+    """ 부모 노드를 찾아 주는 함수 """
+    if parent[node] == node: return node
+
+    p = find(parent, parent[node])
+    parent[node] = p
+    return p
+
+
+def union(parent, node_1, node_2):
+    """ 두 노드를 합해주는 함수 """
+    node_1 = find(parent, node_1)
+    node_2 = find(parent, node_2)
+
+    if node_1 == node_2:
+        return
+
+    if node_1[0] == node_2[0]:
+        if node_1[1] > node_2[1]:
+            parent[node_1] = node_2
+
+        else:
+            parent[node_2] = node_1
+
+    else:
+        if node_1[0] > node_2[0]:
+            parent[node_1] = node_2
+        else:
+            parent[node_2] = node_1
+
+
+def make_parent_node(arr):
+    """ 부모 노드를 만들어 주는 함수 """
+    temp = set([])
+    for weight, node_1, node_2 in arr:
+        temp.add(node_1)
+        temp.add(node_2)
+
+    parent = {list(temp)[x]: list(temp)[x] for x in range(len(temp))}
+
+    if len(temp) != cnt_key + 1:
+        return set([])
+    return parent
+
+
+def find_key_min_cost():
+    """ 최소 비용으로 열쇠를 찾아 주는 함수 """
+    x, y = loc_robot()
+    graph = check_dist(x, y)
+    result = 0
+    parent = make_parent_node(graph)
+
+    if len(parent) == 0:
+        return -1
+
+    graph.sort()
+
+    for cost, node_1, node_2 in graph:
+        if find(parent, node_1) != find(parent, node_2):
+            union(parent, node_1, node_2)
+            result += cost
+
+    return result
+
+
+# print(find_key_min_cost())
+
 x, y = loc_robot()
 print(check_dist(x, y))
+
 
 # 시작점 - K
 # 다른 K - 다른 K
 # 방문 처리 고민하기
+# 좀만 손 보면 될듯
