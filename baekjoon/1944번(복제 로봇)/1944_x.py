@@ -10,7 +10,7 @@
 from collections import deque
 
 N, cnt_key = map(int, input().split())
-miro = [list(map(int, input())) for _ in range(N)]
+miro = [list(map(str, input())) for _ in range(N)]
 
 
 def loc_robot():
@@ -27,30 +27,50 @@ def visited_init():
     return visited
 
 
-def search_miro(x, y):
-    """ 미로를 탐색하는 함수 """
+def check_dist(x, y):
+    """ 거리를 확인하는 함수 """
     dx = [-1, 1, 0, 0]
     dy = [0, 0, -1, 1]
 
+    visited = visited_init()
+    visited[x][y] = True
+
     q = deque()
-    q.append([x, y])
+    q.append([x, y, 0, (x, y)])  # x좌표, y좌료, 길이, 처음이 뭔지 -> 그게 뭔지 보면 열쇠가 구분이 안되서 좌표로 가져갈 것
+
+    node_node_list = []  # 가중치, 노드, 노드를 담아줄 리스트 -> 정수, 튜플, 튜플
 
     while q:
-        x, y = q.popleft()
+        x, y, dist, check = q.popleft()
         for z in range(4):
             nx = x + dx[z]
             ny = y + dy[z]
-            if 0 > nx or nx >= N:
+            if 0 > nx or nx >= N or 0 > ny or ny >= N:
                 continue
-            if 0 > ny or ny >= N:
+            if visited[nx][ny]:
                 continue
-            if miro[nx][ny] == 1:
+            if miro[nx][ny] == '1':
                 continue
 
-            q.append([nx, ny])
+            if miro[nx][ny] == 'K':
+                if check[0] == nx and check[1] == ny:
+                    continue
 
-# 최소 스패닝 트리로 푸는 방법이 뭘까
-# 부모 노드로 방문 처리 하는게 맞을 듯
-# 집합을 이용해서 유니온 파인드를 계산해야함
-# 출발하는 곳에 닿으면 또 복제함
-# 현재 상태를 담아줘야함
+                node_node_list.append([dist + 1, (nx, ny), check])
+                q.append([nx, ny, dist + 1, (nx, ny)])
+                visited = visited_init()
+                visited[nx][ny] = True
+                continue
+
+            q.append([nx, ny, dist + 1, check])
+            visited[nx][ny] = True
+
+    return node_node_list
+
+
+x, y = loc_robot()
+print(check_dist(x, y))
+
+# 시작점 - K
+# 다른 K - 다른 K
+# 방문 처리 고민하기
