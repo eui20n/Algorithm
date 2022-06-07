@@ -13,12 +13,18 @@ N, cnt_key = map(int, input().split())
 miro = [list(map(str, input())) for _ in range(N)]
 
 
-def loc_robot():
-    """ 초기의 시작점을 찾아주는 함수 """
+def loc_robot_key():
+    """ 로봇과 열쇠의 위치를 찾아주는 함수 """
+    temp = []
     for x in range(N):
         for y in range(N):
             if miro[x][y] == 'S':
-                return x, y
+                temp.append([x, y])
+
+            if miro[x][y] == 'K':
+                temp.append([x, y])
+
+    return temp
 
 
 def visited_init():
@@ -32,19 +38,19 @@ def check_dist(x, y):
     dx = [-1, 1, 0, 0]
     dy = [0, 0, -1, 1]
 
+    start_x, start_y = x, y
+
     visited = visited_init()
-    visited[x][y] = True
+    visited[start_x][start_y] = True
 
     q = deque()
+    # x좌표, y좌표, 길이
+    q.append([start_x, start_y, 0])
 
-    # x, y, 길이, 좌표(시작점이나 열쇠), 시작한 곳이 시작 점인지 아닌지 구분해주는 문자, 미로 정보
-    q.append([x, y, 0, (x, y), 'O'])
-
-    # 가중치, 노드, 노드를 담아줄 리스트 -> 정수, 튜플, 튜플
-    node_node_list = []
+    node_list = []
 
     while q:
-        x, y, dist, check, start_check = q.popleft()
+        x, y, dist = q.popleft()
         for z in range(4):
             nx = x + dx[z]
             ny = y + dy[z]
@@ -58,26 +64,12 @@ def check_dist(x, y):
                 continue
 
             if miro[nx][ny] == 'K':
-                if check[0] == nx and check[1] == ny:
-                    continue
+                node_list.append([dist + 1, (start_x, start_y), (nx, ny)])
 
-                miro[nx][ny] = '0'
-                node_node_list.append([dist + 1, (nx, ny), check])
-
-                q.append([nx, ny, 0, (nx, ny), start_check])
-                visited = visited_init()
-                visited[nx][ny] = True
-
-                if start_check == 'O':
-                    q = deque()
-                    q.append([nx, ny, 0, (nx, ny), 'X'])
-                    break
-                continue
-
-            q.append([nx, ny, dist + 1, check, start_check])
+            q.append([nx, ny, dist + 1])
             visited[nx][ny] = True
 
-    return node_node_list
+    return node_list
 
 
 def find(parent, node):
@@ -127,8 +119,12 @@ def make_parent_node(arr):
 
 def find_key_min_cost():
     """ 최소 비용으로 열쇠를 찾아 주는 함수 """
-    x, y = loc_robot()
-    graph = check_dist(x, y)
+    robot_key = loc_robot_key()
+
+    graph = []
+    for x, y in robot_key:
+        graph.extend(check_dist(x, y))
+
     result = 0
     parent = make_parent_node(graph)
 
@@ -142,16 +138,20 @@ def find_key_min_cost():
             union(parent, node_1, node_2)
             result += cost
 
+    for x in range(len(robot_key) - 1):
+        node_1 = tuple(robot_key[x])
+        node_2 = tuple(robot_key[x + 1])
+        if find(parent, node_1) != find(parent, node_2):
+            return -1
     return result
 
 
-# print(find_key_min_cost())
-
-x, y = loc_robot()
-print(check_dist(x, y))
+print(find_key_min_cost())
 
 
-# 시작점 - K
-# 다른 K - 다른 K
-# 방문 처리 고민하기
-# 좀만 손 보면 될듯
+"""
+        핵심정리
+    1. 열쇠와 시작 위치를 노드로 잡고 그 노드에서 가는데 걸리는 시간을 BFS로 구하기
+    2. 그렇게 구한 노드와 시간을 가지고 MST하면 됨
+    
+"""
