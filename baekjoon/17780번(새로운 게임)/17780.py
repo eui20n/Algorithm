@@ -24,15 +24,12 @@
     말은 번호가 낮은 말부터 순서대로 이동한다
 """
 
-from collections import deque
-
 N, K = map(int, input().split())
 chess = [list(map(int, input().split())) for _ in range(N)]
 piece_info = [[0]]
 for _ in range(K):
     x, y, d = map(int, input().split())
     piece_info.append([x - 1, y - 1, d])
-parent_piece = [x for x in range(K + 1)]  # 조종할 말이 무엇인지 알려주는 함수 -> 그냥 할때 마다 접근 할지 고민하기
 
 
 def state_init() -> list:
@@ -62,6 +59,12 @@ def sep_area() -> tuple:
     return red_board, blue_board
 
 
+def change_loc(arr, nx, ny):
+    for idx in arr:
+        piece_info[idx][0] = nx
+        piece_info[idx][1] = ny
+
+
 def moving():
     """ 움직이는 함수 """
     state = state_init()
@@ -69,70 +72,66 @@ def moving():
 
     dx = [0, 0, 0, -1, 1]
     dy = [0, 1, -1, 0, 0]
+    change_d = [0, 2, 1, 4, 3]
     time = 0
 
     while True:
-        if time == 1000:
+        if time >= 1000:
             return -1
+        time += 1
 
-        for next in range(1, len(piece_info)):
-            x = piece_info[next][0]
-            y = piece_info[next][1]
-            d = piece_info[next][2]
+        for idx in range(1, K + 1):
+
+            x = piece_info[idx][0]
+            y = piece_info[idx][1]
+            d = piece_info[idx][2]
+
+            if state[x][y][0] != idx:
+                continue
 
             nx = x + dx[d]
             ny = y + dy[d]
 
-            piece_info[next][0] = nx
-            piece_info[next][1] = ny
-
-            print(f"x: {x}, y: {y}")
-            print(state[x][y])
-            print()
-            if state[x][y][0] != next:
-                continue
-
+            # 빨간 땅을 밟을 때
             if (nx, ny) in red_area:
-                state[nx][ny] = list(reversed(state[x][y]))
+                state[nx][ny].extend(list(reversed(state[x][y])))
                 state[x][y] = []
-                continue
+                change_loc(state[nx][ny], nx, ny)
 
-            if (nx, ny) in blue_area or not(0 <= nx < N and 0 <= ny < N):
-                # 현재 위치에서 방향 바꾸기 그 방향으로 한 칸 가기, 이탈도 이 경우
-                if d == 1:
-                    d = 2
-                elif d == 2:
-                    d = 1
-                elif d == 3:
-                    d = 4
-                elif d == 4:
-                    d = 3
-
+            # 파란 땅을 밟을 때
+            if not (0 <= nx < N and 0 <= ny < N) or (nx, ny) in blue_area:
+                d = change_d[d]
                 nx = x + dx[d]
                 ny = y + dy[d]
 
-                piece_info[next][2] = d
-
-                if (nx, ny) in blue_area:
-                    continue
-
                 if (nx, ny) in red_area:
-                    state[nx][ny] = state[x][y].reverse()
+                    state[nx][ny].extend(list(reversed(state[x][y])))
                     state[x][y] = []
+                    piece_info[idx][2] = d
+                    change_loc(state[nx][ny], nx, ny)
+
+                if not (0 <= nx < N and 0 <= ny < N) or (nx, ny) in blue_area:
                     continue
 
-                state[nx][ny] = state[x][y]
+                state[nx][ny].extend(state[x][y])
+                piece_info[idx][2] = d
                 state[x][y] = []
-                continue
+                change_loc(state[nx][ny], nx, ny)
 
-            # 흰색칸인 경우 -> 그냥 가는데, 만약에 그 칸에 다른 말들이 있으면 그 위에 가기
-            state[nx][ny].extend([next])
+            # 흰땅을 밟았을 때
+            state[nx][ny].extend(state[x][y])
             state[x][y] = []
-            time += 1
+            change_loc(state[nx][ny], nx, ny)
 
             if len(state[nx][ny]) >= 4:
                 return time
 
+
 print(moving())
 
-# 아래 있는 말이 이동하면 위에 있는 말도 좌표가 아래 있는 말과 같아야함 -> 이거만 해결하면 됨, 마우스만 있으면 금방 해결 가능인데
+
+"""
+        핵심정리
+    1. 그냥 하라는 대로 하면 되는 문제
+    2. 빡쎈 구현은 아니지만 상당히 귀찮은 구현이 많은 것 같은 문제
+"""
