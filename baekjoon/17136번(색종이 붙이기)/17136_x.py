@@ -13,8 +13,9 @@ paper = [list(map(int, input().split())) for _ in range(10)]
 result_set = set()
 
 
-def paper_paste(cnt, result, board):
+def paper_paste(cnt_1, cnt_2, cnt_3, cnt_4, cnt_5, result, board):
     """ 종이를 붙여줄 함수 """
+    cnt = [cnt_1, cnt_2, cnt_3, cnt_4, cnt_5]
 
     for x in range(10):
         for y in range(10):
@@ -23,12 +24,20 @@ def paper_paste(cnt, result, board):
 
             for d in [1, 2, 3, 4, 5]:
                 temp = [x[:] for x in board]
-                if d_by_d(x, y, d, temp) and cnt[d - 1] < 5:
-                    print(cnt)
-                    print(*temp, sep='\n')
-                    print()
-                    cnt[d - 1] += 1
-                    paper_paste(cnt, result + 1, temp)
+                if cnt[d - 1] < 5 and d_by_d(x, y, d, temp):
+                    # print(cnt)
+                    # print(*temp, sep='\n')
+                    # print()
+                    if d == 1:
+                        paper_paste(cnt_1 + 1, cnt_2, cnt_3, cnt_4, cnt_5, result + 1, temp)
+                    elif d == 2:
+                        paper_paste(cnt_1, cnt_2 + 1, cnt_3, cnt_4, cnt_5, result + 1, temp)
+                    elif d == 3:
+                        paper_paste(cnt_1, cnt_2, cnt_3 + 1, cnt_4, cnt_5, result + 1, temp)
+                    elif d == 4:
+                        paper_paste(cnt_1, cnt_2, cnt_3, cnt_4 + 1, cnt_5, result + 1, temp)
+                    elif d == 5:
+                        paper_paste(cnt_1, cnt_2, cnt_3, cnt_4, cnt_5 + 1, result + 1, temp)
 
     for x in range(10):
         for y in range(10):
@@ -48,9 +57,6 @@ def d_by_d(x, y, d, board):
                 return False
             if board[idx_x][idx_y] == 0:
                 return False
-
-    for idx_x in range(x, x + d):
-        for idx_y in range(y, y + d):
             board[idx_x][idx_y] = 0
 
     return True
@@ -58,7 +64,7 @@ def d_by_d(x, y, d, board):
 
 def main():
     """ 함수를 실행 시켜줄 함수 """
-    paper_paste([0, 0, 0, 0, 0], 0, paper)
+    paper_paste(0, 0, 0, 0, 0, 0, paper)
     if len(result_set) == 0:
         return -1
     return min(result_set)
