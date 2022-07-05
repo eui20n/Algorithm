@@ -12,7 +12,6 @@
     이 때 조작해야 하는 가로선의 최소 수는 몇인가가
 """
 import sys
-from collections import deque
 from copy import deepcopy
 
 sys.setrecursionlimit(10 ** 6)
@@ -44,18 +43,16 @@ def change_ladder():
 
 def all_combination(ladder):
     """ 사다리 타기 할 수 있는 모든 선 """
-    temp = deque()
+    temp = []
     all_case = []
 
     for x in range(H):
         for y in range(N - 1):
             temp.append([x, y, x, y + 1])
-
+    # 본인 위치가 0일 때, 옆이 다른 숫자 일 때
     for x, y, x_1, y_1 in temp:
-        if ladder[x][y] != 0 and ladder[x][y] == ladder[x_1][y_1]:
-            continue
-
-        all_case.append([x, y, x_1, y_1])
+        if ladder[x][y] == 0 and ladder[x_1][y_1] == 0:
+            all_case.append([x, y, x_1, y_1])
 
     return all_case
 
@@ -77,9 +74,10 @@ def ladder_game(ladder, all_case, cnt, result, start):
         x_1 = all_case[idx][2]
         y_1 = all_case[idx][3]
 
-        ladder[x][y], ladder[x_1][y_1] = cnt + 1, cnt + 1
-        ladder_game(ladder, all_case, cnt + 1, result + 1, idx + 1)
-        ladder[x][y], ladder[x_1][y_1] = 0, 0
+        if ladder[x][y] == 0 or ladder[x_1][y_1] == 0:
+            ladder[x][y], ladder[x_1][y_1] = cnt + 1, cnt + 1
+            ladder_game(ladder, all_case, cnt + 1, result + 1, idx + 1)
+            ladder[x][y], ladder[x_1][y_1] = 0, 0
 
 
 def game(ladder):
@@ -114,6 +112,10 @@ def main():
 
 
 main()
+# ladder, cnt = change_ladder()
+# print(*all_combination(ladder), sep='\n')
+# print()
+# print(*ladder, sep='\n')
 print(min_add_ladder)
 
 # M의 가로선의 개수임, R와 C으로 볼꺼면 H과 N임
