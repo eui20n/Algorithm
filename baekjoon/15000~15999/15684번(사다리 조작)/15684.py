@@ -11,62 +11,48 @@
     우리는 가로선을 조작해서 i번 세로선이 i번으로 가게 하고 싶다
     이 때 조작해야 하는 가로선의 최소 수는 몇인가가
 """
-import sys
-from copy import deepcopy
-
-sys.setrecursionlimit(10 ** 6)
-
 N, M, H = map(int, input().split())
 ladder_info = []
 for _ in range(M):
     a, b = map(int, input().split())
-    ladder_info.append([a, b])
+    ladder_info.append([a - 1, b - 1])
 
 min_add_ladder = float('inf')
 
 
-def change_ladder():
-    """ ladder_info를 보고 좌표 평명 위로 바꿔주는 함수 """
-    ladder = [[0] * N for _ in range(H)]
-    # 구분을 하기 위해서 있음
+def change_ladder_info():
+    """ ladder info를 가지고 그래프로 나타내기 """
+    temp = [[0] * N for _ in range(H)]
     cnt = 1
-
-    # a, b는 문제에서 주어진 입력
     for a, b in ladder_info:
-        ladder_idx_1, ladder_idx_2 = b - 1, b
-        ladder[a - 1][ladder_idx_1] = cnt
-        ladder[a - 1][ladder_idx_2] = cnt
+        temp[a][b] = cnt
+        temp[a][b + 1] = cnt
         cnt += 1
 
-    return ladder, cnt
+    return temp, cnt
 
 
 def all_combination(ladder):
-    """ 사다리 타기 할 수 있는 모든 선 """
+    """ 현재 발판이 있는 경우를 제외한 모든 경우의 수 """
     temp = []
-    all_case = []
-
     for x in range(H):
         for y in range(N - 1):
-            temp.append([x, y, x, y + 1])
-    # 본인 위치가 0일 때, 옆이 다른 숫자 일 때
-    for x, y, x_1, y_1 in temp:
-        if ladder[x][y] == 0 and ladder[x_1][y_1] == 0:
-            all_case.append([x, y, x_1, y_1])
-
-    return all_case
+            x_1, y_1, x_2, y_2 = x, y, x, y + 1
+            if ladder[x_1][y_1] == 0 and ladder[x_2][y_2] == 0:
+                temp.append([x_1, y_1, x_2, y_2])
+    return temp
 
 
 def ladder_game(ladder, all_case, cnt, result, start):
-    """ 사다리 타기 게임을 하는 함수 """
+    """ 사다리 타기 게임 - 재귀 부분"""
     global min_add_ladder
+
+    if result >= 4:
+        return
 
     if game(ladder):
         if min_add_ladder > result:
             min_add_ladder = result
-
-    if start == len(all_case):
-        return
 
     for idx in range(start, len(all_case)):
         x = all_case[idx][0]
@@ -74,17 +60,18 @@ def ladder_game(ladder, all_case, cnt, result, start):
         x_1 = all_case[idx][2]
         y_1 = all_case[idx][3]
 
-        if ladder[x][y] == 0 or ladder[x_1][y_1] == 0:
-            ladder[x][y], ladder[x_1][y_1] = cnt + 1, cnt + 1
+        if ladder[x][y] == 0 and ladder[x_1][y_1] == 0:
+            ladder[x][y], ladder[x_1][y_1] = cnt, cnt
             ladder_game(ladder, all_case, cnt + 1, result + 1, idx + 1)
             ladder[x][y], ladder[x_1][y_1] = 0, 0
 
 
 def game(ladder):
-    """ 사다리 타기를 하는 곳"""
+    """ 사다리 타기 게임 - 게임 부분 """
     for start in range(N):
         idx = start
         x = 0
+
         while True:
             if idx + 1 < N and ladder[x][idx] != 0 and ladder[x][idx] == ladder[x][idx + 1]:
                 idx += 1
@@ -93,33 +80,37 @@ def game(ladder):
                 idx -= 1
 
             x += 1
-            if x == H - 1:
-                break
+            if x == H and idx != start:
+                return False
 
-        if start == idx:
-            continue
-        else:
-            return False
+            if x == H and idx == start:
+                break
 
     return True
 
 
 def main():
     """ 함수를 실행 시켜줄 함수 """
-    ladder, cnt = change_ladder()
+    ladder, cnt = change_ladder_info()
     all_case = all_combination(ladder)
     ladder_game(ladder, all_case, cnt, 0, 0)
 
+    if min_add_ladder == float('inf') or min_add_ladder > 4:
+        return -1
+    return min_add_ladder
 
-main()
-# ladder, cnt = change_ladder()
-# print(*all_combination(ladder), sep='\n')
-# print()
-# print(*ladder, sep='\n')
-print(min_add_ladder)
 
-# M의 가로선의 개수임, R와 C으로 볼꺼면 H과 N임
-# 좌표로 표현하고 각각의 가로선을 구분지으면 됨
+print(main())
 
-# change_ladder 내 생각 대로 나옴
-# all_combination 내 생각 대로 나옴
+
+"""
+        핵심 정리
+    1. 이문제는 실수가 엄청나게 많았음
+    1-1. 문제를 안읽음 => 최대로 추가 되는 사다리는 3개임, 그 이상은 볼 필요 없었음
+    1-2. 세로선은 연속해서 있을 수 없었음
+    1-3. 위 2개를 몰라서(문제를 잘 안읽어서) 한참걸림
+    1-4. 1-1에서 최대로 추가되는 사다리는 3개인데, 4개로 계산해서 답이 계속 틀렸다고 나옴
+    1-5. 실수를 좀 줄이고 문제를 잘 읽어야함
+    
+    2. 사다리가 추가될 수 있는 모든 곳을 구한다음 그 경우로 백트래킹(조합)을 하면 됨
+"""
