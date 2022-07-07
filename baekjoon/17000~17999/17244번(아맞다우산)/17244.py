@@ -11,40 +11,42 @@ C, R = map(int, input().split())
 house = [list(map(str, input())) for _ in range(R)]
 
 
-def visited_init(cnt):
-    """ 방문처리 리스트를 초기화 해주는 함수 """
-    visited = [[0] * C for _ in range(2 ** cnt + 1)]
-    return visited
-
-
 def check_loc():
-    """ 물건, 시작점, 도착점의 위치를 확인해주는 함수 """
+    """ 시작, 끝, 물건 위치를 구해주는 함수 """
     start = []
     end = []
     cnt = 0
+
     for x in range(R):
         for y in range(C):
             if house[x][y] == 'S':
                 house[x][y] = '.'
-                start+= [x, y]
+                start += [x, y]
 
             elif house[x][y] == 'E':
                 house[x][y] = '.'
                 end += [x, y]
 
             elif house[x][y] == 'X':
+                house[x][y] = str(2 ** cnt)
                 cnt += 1
-                house[x][y] = str(cnt)
 
     return start, end, cnt
 
 
-def search_house(start, end, visited, things):
-    """ 집을 탐색하는 함수 """
+def visited_init(cnt):
+    """ 방문처리 리스트를 초기화 해주는 함수 """
+    visited = [[[False] * C for _ in range(R)] for _ in range(2 ** cnt)]
+    return visited
+
+
+def search_house(start, end, things):
+    """ 집을 탐색해주는 함수 """
     dx = [-1, 1, 0, 0]
     dy = [0, 0, -1, 1]
 
-    visited[0][start[1]] |= (1 << start[0])
+    visited = visited_init(things)
+    visited[0][start[0]][start[1]] = True
 
     q = deque()
     q.append([start[0], start[1], 0, 0])
@@ -52,7 +54,7 @@ def search_house(start, end, visited, things):
     while q:
         x, y, cnt, time = q.popleft()
 
-        if x == end[0] and y == end[1] and cnt == things:
+        if x == end[0] and y == end[1] and cnt == 2 ** things - 1:
             return time
 
         for z in range(4):
@@ -64,28 +66,38 @@ def search_house(start, end, visited, things):
                 continue
             if house[nx][ny] == '#':
                 continue
-            if visited[cnt][ny] & (1 << nx):
+            if visited[cnt][nx][ny]:
                 continue
 
             if house[nx][ny].isnumeric():
                 house_num = int(house[nx][ny])
-
                 if not cnt & house_num:
-                    new_cnt = cnt + house_num
-                    q.append([nx, ny, new_cnt, time + 1])
-                    visited[new_cnt][ny] |= (1 << nx)
+                    q.append([nx, ny, cnt | house_num, time + 1])
+                    visited[cnt][nx][ny] = True
                     continue
 
             q.append([nx, ny, cnt, time + 1])
-            visited[cnt][ny] |= (1 << nx)
+            visited[cnt][nx][ny] = True
 
 
 def main():
+    """ 함수를 실행 시켜줄 함수 """
     start, end, cnt = check_loc()
-    visited = visited_init(cnt)
-    return search_house(start, end, visited, cnt)
+    result = search_house(start, end, cnt)
+    return result
 
 
 print(main())
 
-# 먹은 라벨에 따라서 방문처리 리스트가 바꿔야함
+
+"""
+        소요 시간
+    1시간 30분 정도 소요됨
+
+        핵심정리
+    1. 각각의 물건에 라벨을 붙여줌 => 2 ** 물건의 번호 (물건의 번호는 0 부터 시작) ==> 비트마스킹을 하기 위해서
+    2. 해당 물건을 먹으면 해당 방문처리로 감
+    3. 2 ** 물건의 개수 - 1 과 끝점과 x, y 가 같아지면 종료하면 됨
+    4. 이 문제를 풀 때, 물건을 만나고 방문처리 리스트를 초기화 하는 식으로 하면 안됨 => 방향에 따라서 어느 물건은 늦게 만나는 경우가 생김
+    4-1. 위 문제가 생기면 그 경로는 최단 경로가 아니게 됨 
+"""
