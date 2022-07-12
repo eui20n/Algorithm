@@ -16,41 +16,40 @@ N = int(input())
 apple_count = int(input())
 apple_loc = []
 for _ in range(apple_count):
-    a,b = map(int,input().split())
-    apple_loc.append([a-1,b-1])
+    a, b = map(int, input().split())
+    apple_loc.append([a - 1, b - 1])
 snake_count = int(input())
 snake_dir = []
 for _ in range(snake_count):
-    a,b = map(str,input().split())
-    snake_dir.append([int(a),b])
-    
-    
+    a, b = map(str, input().split())
+    snake_dir.append([int(a), b])
+
 # 방향은 오른쪽 기준이고, 만약에 왼쪽으로 가면 인덱스를 반대로 가면 됨
-dx = [0,1,0,-1]
-dy = [1,0,-1,0]
+dx = [0, 1, 0, -1]
+dy = [1, 0, -1, 0]
+
 
 # 그래프와 같은건 그리지 않고 현재 위치만을 가지고 계산할것
 def snake():
     direct = 0
     time = 0
     body = deque()
-    body.append([0,0]) # 현재 좌표가 body에 들어가 있음
+    body.append([0, 0])  # 현재 좌표가 body에 들어가 있음
     # 방향으로 return이 걸리기 전까지 계속 가는 거임
     while True:
-        
+
         # 가장 앞에 좌표를 추가해줌, 만약에 사과를 만나면 그냥 두고, 못만나면 가장 뒤쪽을 제외해주면됨
-        body.appendleft([body[0][0] + dx[direct],body[0][1] + dy[direct]])
-        time +=1
+        body.appendleft([body[0][0] + dx[direct], body[0][1] + dy[direct]])
+        time += 1
         # 만약에 벽에 부딪히면 종룧마
         if body[0][0] < 0 or body[0][1] < 0 or body[0][0] >= N or body[0][1] >= N:
             return time
-        
+
         # 자기 자신을 만나면 종료함
-        for x in range(1,len(body)):
-            if [body[0][0],body[0][1]] == body[x]:
+        for x in range(1, len(body)):
+            if [body[0][0], body[0][1]] == body[x]:
                 return time
-            
-            
+
         # 사과 만나는 연산
         if len(apple_loc) != 0:
             index = -1
@@ -59,26 +58,24 @@ def snake():
                     index = x
                     break
             if index != -1:
-                del apple_loc[index] # 만약에 사과를 만났으면 만난 사과는 삭제
+                del apple_loc[index]  # 만약에 사과를 만났으면 만난 사과는 삭제
             else:
-                body.pop() # 사과를 안맞으면 몸의 길이를 원래대로 만들어야함
+                body.pop()  # 사과를 안맞으면 몸의 길이를 원래대로 만들어야함
         else:
             body.pop()
-            
+
         # 만약에 시간이 맞으면 방향으로 돌려줌
         for x in range(len(snake_dir)):
             if snake_dir[x][0] == time:
                 if snake_dir[x][1] == 'D':
-                    direct +=1
+                    direct += 1
                     if direct > 3:
                         direct = 0
                 else:
-                    direct -=1
+                    direct -= 1
                     if direct < 0:
                         direct = 3
                 break
-    
-    
-    
-                
+
+
 print(snake())
