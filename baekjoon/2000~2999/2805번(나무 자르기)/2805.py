@@ -8,22 +8,20 @@
 """
 N, M = map(int, input().split())
 tree_height = list(map(int, input().split()))
-cut_wood_num = 0
 
 
 def binary_search(start, end):
-    """ 이분 탐색 함수 """
-    global cut_wood_num
+    """ 이분 탐색을 해주는 함수 """
     if start > end:
         return end
 
     mid = (start + end) // 2
     num = cutting_wood(mid)
 
-    if num <= M:
-        return binary_search(start, mid - 1)
-    else:
+    if num >= M:
         return binary_search(mid + 1, end)
+    else:
+        return binary_search(start, mid - 1)
 
 
 def cutting_wood(num):
@@ -39,8 +37,15 @@ def cutting_wood(num):
 
 def main():
     """ 함수를 실행 시켜주는 함수 """
-    return binary_search(1, max(tree_height))
+    result = binary_search(0, max(tree_height))
+    return result
 
 
 print(main())
 
+
+"""
+        이분 탐색 + 매개 변수 탐수
+    1. 어렵다
+    2. 생각할 것이 너무 많은 듯
+"""
