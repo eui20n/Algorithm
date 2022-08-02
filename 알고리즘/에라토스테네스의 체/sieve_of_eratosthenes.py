@@ -19,6 +19,7 @@ def check_prime(num):
         if not visited[idx]:
             continue
 
+        # 여기서 2 * idx인 이유는 자기 자신은 소수이기 때문이다.
         for not_prime_idx in range(2 * idx, num + 1, idx):
             visited[not_prime_idx] = False
 
@@ -32,6 +33,6 @@ def check_prime(num):
 
 if __name__ == "__main__":
     # 1 ~ 100000 사이의 모든 소수를 알고 싶음 => n은 범위의 끝값
-    n = 1000
+    n = 100
     check_prime(n)
 
