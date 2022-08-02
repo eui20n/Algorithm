@@ -26,4 +26,7 @@
 5. 이렇게 하면 결국에 이렇게 색이 칠해진다.   
 <img src = "https://user-images.githubusercontent.com/74887218/182335810-5bd49df8-a516-4316-9d4e-c2807aa266bf.png" width="30%"><br>
 <br>
-이렇게 하면 색이 안칠해져 있는 부분이 있는데, 그 부분이 소수이다. 
+이렇게 하면 색이 안칠해져 있는 부분이 있는데, 그 부분이 소수이다.   
+<br>
+
+> <a href="https://ko.wikipedia.org/wiki/%EC%97%90%EB%9D%BC%ED%86%A0%EC%8A%A4%ED%85%8C%EB%84%A4%EC%8A%A4%EC%9D%98_%EC%B2%B4">위키백과</a>
