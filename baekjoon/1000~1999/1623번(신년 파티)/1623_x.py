@@ -12,25 +12,31 @@
 """
 
 
-def new_year_party(visited, dp_table, idx):
+def new_year_party(visited, dp_table, join_list_o, join_list_x, idx):
     """ 신년 파티 -> DP함수 """
-    visited[idx] = 1
+    visited[idx] = True
 
     for next_idx in tree[idx]:
         if visited[next_idx]:
             continue
 
-        new_year_party(visited, dp_table, next_idx)
+        new_year_party(visited, dp_table, join_list_o, join_list_x, next_idx)
 
-
+        dp_table[idx][0] = 1
+        dp_table[idx][1] = 1
 
 
 
 def main():
     """ 함수를 실행시켜줄 함수 """
-    visited = [0 for _ in range(N + 1)]
+    visited = [False for _ in range(N + 1)]
     dp_table = [[0, 0] for _ in range(N + 1)]
-    new_year_party(visited, dp_table, 1)
+
+    # 참석 명단으로 사장이 있을 때랑 없을 때
+    join_list_o = []
+    join_list_x = []
+
+    new_year_party(visited, dp_table, join_list_o, join_list_x, 1)
 
 
 if __name__ == "__main__":
